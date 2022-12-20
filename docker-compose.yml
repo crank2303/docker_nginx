@@ -5,25 +5,22 @@ services:
   django:
     build: ./apiwork
     environment:
-      - DJANGO_SUPERUSER_USERNAME=admin
-      - DJANGO_SUPERUSER_EMAIL=admin@admin.ru
-      - DJANGO_SUPERUSER_PASSWORD=admin
-    ports:
-      - "8000:8000"
+      - DJANGO_SUPERUSER_USERNAME=${DJANGO_SUPERUSER_USERNAME}
+      - DJANGO_SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL}
+      - DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD}
     depends_on:
       - postgres
+    command: ["./wait-for-it.sh", "postgres:5432", "--", "python", "app.py"]
   postgres:
     image: postgres:14
     environment:
-      - POSTGRES_DB=movies_database
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=1234
-      - POSTGRES_PORT=5423
-      - POSTGRES_HOST=127.0.0.1
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_HOST=${POSTGRES_HOST}
     volumes:
       - postgres_data:/var/lib/postgresql/data/
-    ports:
-      - "5432:5432"
   nginx:
     image: nginx:1.19.2
     volumes:
@@ -31,7 +28,5 @@ services:
       - ./configs:/etc/nginx/conf.d:ro
     depends_on:
       - django
-    ports:
-      - "80:80"
 volumes:
   postgres_data:

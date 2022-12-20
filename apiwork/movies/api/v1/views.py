@@ -20,7 +20,8 @@ class MoviesApiMixin:
             queryset: Queryset from Filmwork with genre, actor, writer, director
 
         """
-        queryset = self.model.objects.values('id', 'title', 'description', 'creation_date', 'rating', 'type'
+        queryset = self.model.objects.prefetch_related('genres', 'persons'
+        ).values('id', 'title', 'description', 'creation_date', 'rating', 'type'
         ).annotate(
             genres=ArrayAgg('genres__name', distinct=True),
             actors=ArrayAgg(
@@ -82,17 +83,5 @@ class MoviesDetailApi(MoviesApiMixin, BaseDetailView):
 
         """
         queryset = self.get_queryset()
-        queryset_film = queryset.filter(id__icontains=self.kwargs[self.pk_url_kwarg])
-        context = {
-            'id': [item['id'] for item in queryset_film][0],
-            'title': [item['title'] for item in queryset_film][0],
-            'description': [item['description'] for item in queryset_film][0],
-            'creation_date': [item['creation_date'] for item in queryset_film][0],
-            'rating': [item['rating'] for item in queryset_film][0],
-            'type': [item['type'] for item in queryset_film][0],
-            'genres': [item['genres'] for item in queryset_film][0],
-            'actors': [item['actors'] for item in queryset_film][0],
-            'directors': [item['directors'] for item in queryset_film][0],
-            'writers': [item['writers'] for item in queryset_film][0],
-        }
+        context = queryset.get(id__icontains=self.kwargs[self.pk_url_kwarg])
         return context
